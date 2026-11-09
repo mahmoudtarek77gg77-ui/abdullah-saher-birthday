@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -28,15 +29,19 @@
     .tiny{font-size:12px;color:#cbbdce;margin-top:16px}
   </style>
 </head>
+
 <body>
   <main class="page">
+
     <section id="first" class="panel">
       <h1>هشق الجمبري للمرور 🦐</h1>
       <p class="sub">استنى بس... فيه إجراءات أمنية لازم تخلصها الأول</p>
+
       <video id="clip" playsinline preload="metadata" controls>
         <source src="birthday-video.mp4" type="video/mp4">
         المتصفح لا يدعم تشغيل الفيديو.
       </video>
+
       <div style="margin-top:20px">
         <button id="zara">زارا</button>
         <div id="count">اضغط على زارا 3 مرات عشان نسمحلك بالمرور 😂</div>
@@ -44,17 +49,30 @@
     </section>
 
     <section id="second" class="panel">
-      <div class="flower-wrap"><div class="flower">🌹</div></div>
+      <div class="flower-wrap">
+        <div class="flower">🌹</div>
+      </div>
+
       <img class="photo" src="birthday-photo.jpeg" alt="صورة صاحب عيد الميلاد">
+
       <div class="wish">كل سنه وانت طيب ي اخويا😘</div>
       <p class="wish2">سنه سعيده عليك ان شاء الله🥰</p>
+
       <audio id="song" preload="auto" loop>
         <source src="birthday-song.mp3" type="audio/mpeg">
       </audio>
+
       <button class="music" id="musicButton">شغّل الأغنية 🎵</button>
       <div class="tiny">لو الأغنية مشتغلتش لوحدها، دوس الزرار فوق.</div>
     </section>
+
   </main>
+
+  <!-- موسيقى حماسية مستقلة للصفحة الأولى -->
+  <audio id="hypeMusic" preload="auto" loop>
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+  </audio>
+
 <script>
   const button = document.getElementById('zara');
   const countText = document.getElementById('count');
@@ -62,18 +80,31 @@
   const first = document.getElementById('first');
   const second = document.getElementById('second');
   const song = document.getElementById('song');
+  const hypeMusic = document.getElementById('hypeMusic');
   const musicButton = document.getElementById('musicButton');
+
   let taps = 0;
   let started = false;
 
+  // تشغيل الموسيقى الحماسية عند أول ضغطة على زارا
   button.addEventListener('click', async () => {
     if (started) return;
+
+    if (hypeMusic.paused) {
+      hypeMusic.play().catch(() => {});
+    }
+
     taps++;
-    countText.textContent = taps < 3 ? `فاضلك ${3-taps} ضغطة... ركّز 😂` : 'تم قبول طلب المرور... جهّز نفسك!';
+
+    countText.textContent = taps < 3
+      ? `فاضلك ${3-taps} ضغطة... ركّز 😂`
+      : 'تم قبول طلب المرور... جهّز نفسك!';
+
     if (taps === 3) {
       started = true;
       button.disabled = true;
       button.textContent = 'جاري فتح البوابة...';
+
       try {
         await clip.play();
       } catch (e) {
@@ -84,26 +115,46 @@
     }
   });
 
-  clip.addEventListener('ended', () => {
+  // عند انتهاء الفيديو: وقف الحماس وشغّل أغنية عيد الميلاد
+  clip.addEventListener('ended', async () => {
+
+    // إيقاف الموسيقى الحماسية وإرجاعها للبداية
+    hypeMusic.pause();
+    hypeMusic.currentTime = 0;
+
+    // إظهار الصفحة الثانية
     first.style.display = 'none';
     second.style.display = 'block';
-    window.scrollTo({top:0,behavior:'smooth'});
-    song.play().then(() => {
+
+    window.scrollTo({top:0, behavior:'smooth'});
+
+    // تشغيل أغنيتك الأصلية من البداية
+    song.pause();
+    song.currentTime = 0;
+
+    try {
+      await song.play();
       musicButton.textContent = 'إيقاف الأغنية ⏸';
-    }).catch(() => {
+    } catch (e) {
       musicButton.textContent = 'شغّل الأغنية 🎵';
-    });
+    }
   });
 
+  // زر التحكم في أغنية الصفحة الثانية فقط
   musicButton.addEventListener('click', async () => {
     if (song.paused) {
-      try { await song.play(); musicButton.textContent = 'إيقاف الأغنية ⏸'; }
-      catch(e) { musicButton.textContent = 'تعذّر تشغيل الأغنية'; }
+      try {
+        await song.play();
+        musicButton.textContent = 'إيقاف الأغنية ⏸';
+      } catch (e) {
+        musicButton.textContent = 'تعذّر تشغيل الأغنية';
+      }
     } else {
       song.pause();
       musicButton.textContent = 'شغّل الأغنية 🎵';
     }
   });
 </script>
+
 </body>
 </html>
