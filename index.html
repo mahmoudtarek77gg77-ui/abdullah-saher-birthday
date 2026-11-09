@@ -17,11 +17,12 @@
     button:disabled{opacity:.7;cursor:wait}
     #count{font-size:14px;color:#f8dce8;min-height:22px;margin:12px 0 0}
     #second{display:none;overflow:hidden}
-    .flower-wrap{height:170px;position:relative;margin:0 auto 4px}
+    .flower-wrap{height:170px;position:relative;margin:0 auto 4px;z-index:2;pointer-events:none}
     .flower{font-size:100px;position:absolute;left:50%;bottom:-150px;transform:translateX(-50%);animation:rise 2s cubic-bezier(.2,.8,.2,1) forwards;filter:drop-shadow(0 8px 12px #0005)}
     @keyframes rise{to{bottom:0}}
-    .photo{width:min(100%,420px);max-height:460px;object-fit:cover;border-radius:20px;border:4px solid #ffe2a8;opacity:0;transform:translateY(35px) scale(.94);animation:showPhoto 1.2s 1.5s forwards;box-shadow:0 16px 45px #0008}
-    @keyframes showPhoto{to{opacity:1;transform:translateY(0) scale(1)}}
+    .photo-wrap{min-height:300px;display:grid;place-items:start center;margin-top:-8px;overflow:visible}
+    .photo{display:block;width:min(100%,420px);max-height:460px;object-fit:cover;border-radius:20px;border:4px solid #ffe2a8;opacity:0;transform:translateY(-175px) scale(.12);transform-origin:50% 0;animation:photoBloom 1.65s cubic-bezier(.16,1,.3,1) 1.25s forwards;box-shadow:0 16px 45px #0008;position:relative;z-index:1}
+    @keyframes photoBloom{0%{opacity:0;transform:translateY(-175px) scale(.12);border-radius:50%}55%{opacity:1;border-radius:28px}100%{opacity:1;transform:translateY(0) scale(1);border-radius:20px}}
     .wish{font-size:clamp(25px,5vw,38px);line-height:1.7;color:#ffe2a8;margin:20px 0 4px}
     .wish2{font-size:20px;color:#fff;margin:0 0 18px}
     .music{font-size:16px;padding:12px 22px;margin-top:10px}
@@ -37,6 +38,9 @@
         <source src="birthday-video.mp4" type="video/mp4">
         المتصفح لا يدعم تشغيل الفيديو.
       </video>
+      <audio id="introMusic" preload="auto" loop>
+        <source src="birthday-song.mp3" type="audio/mpeg">
+      </audio>
       <div style="margin-top:20px">
         <button id="zara">زارا</button>
         <div id="count">اضغط على زارا 3 مرات عشان نسمحلك بالمرور 😂</div>
@@ -45,14 +49,11 @@
 
     <section id="second" class="panel">
       <div class="flower-wrap"><div class="flower">🌹</div></div>
-      <img class="photo" src="birthday-photo.jpeg" alt="صورة صاحب عيد الميلاد">
+      <div class="photo-wrap">
+        <img class="photo" src="birthday-photo.jpeg" alt="صورة صاحب عيد الميلاد">
+      </div>
       <div class="wish">كل سنه وانت طيب ي اخويا😘</div>
       <p class="wish2">سنه سعيده عليك ان شاء الله🥰</p>
-      <audio id="song" preload="auto" loop>
-        <source src="birthday-song.mp3" type="audio/mpeg">
-      </audio>
-      <button class="music" id="musicButton">شغّل الأغنية 🎵</button>
-      <div class="tiny">لو الأغنية مشتغلتش لوحدها، دوس الزرار فوق.</div>
     </section>
   </main>
 <script>
@@ -61,8 +62,7 @@
   const clip = document.getElementById('clip');
   const first = document.getElementById('first');
   const second = document.getElementById('second');
-  const song = document.getElementById('song');
-  const musicButton = document.getElementById('musicButton');
+  const introMusic = document.getElementById('introMusic');
   let taps = 0;
   let started = false;
 
@@ -75,6 +75,9 @@
       button.disabled = true;
       button.textContent = 'جاري فتح البوابة...';
       try {
+        // يبدأ الصوت بعد أول تفاعل من المستخدم حتى يسمح المتصفح بتشغيله.
+        introMusic.volume = 0.45;
+        await introMusic.play();
         await clip.play();
       } catch (e) {
         countText.textContent = 'اضغط علامة التشغيل ▶️ في الفيديو عشان يبدأ';
@@ -85,24 +88,12 @@
   });
 
   clip.addEventListener('ended', () => {
+    // تنتهي موسيقى الصفحة الأولى تمامًا عند الانتقال للصفحة الثانية.
+    introMusic.pause();
+    introMusic.currentTime = 0;
     first.style.display = 'none';
     second.style.display = 'block';
     window.scrollTo({top:0,behavior:'smooth'});
-    song.play().then(() => {
-      musicButton.textContent = 'إيقاف الأغنية ⏸';
-    }).catch(() => {
-      musicButton.textContent = 'شغّل الأغنية 🎵';
-    });
-  });
-
-  musicButton.addEventListener('click', async () => {
-    if (song.paused) {
-      try { await song.play(); musicButton.textContent = 'إيقاف الأغنية ⏸'; }
-      catch(e) { musicButton.textContent = 'تعذّر تشغيل الأغنية'; }
-    } else {
-      song.pause();
-      musicButton.textContent = 'شغّل الأغنية 🎵';
-    }
   });
 </script>
 </body>
